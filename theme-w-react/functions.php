@@ -73,7 +73,7 @@ function get_custom_fields_for_restaurant($post_id) {
 
     return [
         'post_title' => get_the_title($post_id) ?: 'No title',
-        'restaurant_image' => get_the_guid($pod->field('restaurant_image')) ?: 'No Image',
+        'restaurant_image' => $pod->field('restaurant_image') ?: 'No Image',
         'restaurant_rating' => $pod->field('restaurant_rating') ?: 'no rating',
         'countries' => $pod->field('countries') ?: [],
         'amount' => $pod->field('amount') ?: 'no money',
