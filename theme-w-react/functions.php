@@ -13,51 +13,72 @@ add_action('wp_enqueue_scripts', 'enqueue_theme_styles');
 
 
 function enqueue_react_script() {
-    // Get the current page ID
     $post_id = get_the_ID();
 
-    // Default data structure
-    $data = [
-        'postId' => $post_id,
-        'pageData' => null, // This will contain both WordPress and Pods fields
-    ];
+    // Fetch the page custom fields using Pods
+    $page_custom_fields = get_custom_fields_for_page($post_id);
 
-    // Check if Pods is available
-    if (class_exists('Pods')) {
-        // Get the pod object for the 'page' pod
-        $page_pod = pods('page', $post_id);
+    // Fetch related restaurants using Pods
+    $restaurants_pod = pods('page', $post_id);
+    $restaurants = $restaurants_pod->field('restaurants'); // Get related restaurants
 
-        // Ensure the pod exists
-        if ($page_pod && $page_pod->exists()) {
-            // Fetch all core WordPress fields
-            $page_data = $page_pod->row();
-
-            // Fetch custom fields from Pods
-            $custom_fields = $page_pod->fields();
-            foreach ($custom_fields as $field_name => $field_options) {
-                $page_data[$field_name] = $page_pod->field($field_name);
-            }
-
-            // Assign structured data to pass to React
-            $data['pageData'] = $page_data;
+    $restaurant_data = [];
+    if (!empty($restaurants)) {
+        foreach ($restaurants as $restaurant_id) {
+            $restaurant_data[] = get_custom_fields_for_restaurant($restaurant_id);
         }
     }
 
-    // Enqueue React script
+    // Prepare data for JavaScript
+    $data = [
+        'postId' => (string) $post_id,
+        'pageData' => [
+            'page_name' => $page_custom_fields['page_name'],
+            'page_description' => $page_custom_fields['page_description'],
+        ],
+        'restaurants' => $restaurant_data
+    ];
+
+    // Enqueue React script first
     wp_enqueue_script(
         'react-script',
         get_template_directory_uri() . '/bundled/js/index.js',
         array(),
-        null,
+        '1.0.0',
         true
     );
 
-    // Localize the data to be available in React
-    var_dump($data);
+    // Localize script AFTER enqueuing React
     wp_localize_script('react-script', 'WPData', $data);
+
+    // Debug output
+    error_log(print_r($data, true));
 }
 add_action('wp_enqueue_scripts', 'enqueue_react_script');
 
+
+// Fetch custom fields for Page using Pods
+function get_custom_fields_for_page($post_id) {
+    $pod = pods('page', $post_id);
+
+    return [
+        'page_name' => $pod->field('page_name') ?: '',
+        'page_description' => $pod->field('page_description') ?: '',
+    ];
+}
+
+// Fetch custom fields for Restaurant using Pods
+function get_custom_fields_for_restaurant($post_id) {
+    $pod = pods('restaurants', $post_id);
+
+    return [
+        'post_title' => get_the_title($post_id) ?: 'No title',
+        'restaurant_image' => get_the_guid($pod->field('restaurant_image')) ?: 'No Image',
+        'restaurant_rating' => $pod->field('restaurant_rating') ?: 'no rating',
+        'countries' => $pod->field('countries') ?: [],
+        'amount' => $pod->field('amount') ?: 'no money',
+    ];
+}
 
 
 

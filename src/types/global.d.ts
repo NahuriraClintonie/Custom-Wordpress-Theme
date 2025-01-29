@@ -1,13 +1,17 @@
 interface Window {
     WPData: {
-        postId: string;
-        pagePod: {
-            id: string;
+        postId: number;
+        pageData: {
             page_name: string;
-            description: string;
-            restaurants: {
-                post_title: string;
-            }[];
-        } | null;  // In case pagePod is not available or null
+            page_description: string;
+        };
+        restaurants: {
+            restaurant_image: {
+                guid: string; // Image URL
+            };
+            restaurant_rating: string;
+            countries: string[];
+            amount: string;
+        }[];
     };
 }
