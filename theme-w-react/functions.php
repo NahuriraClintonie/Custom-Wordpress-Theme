@@ -12,34 +12,47 @@ add_action('wp_enqueue_scripts', 'enqueue_theme_styles');
 
 
 
+/**
+ * Enqueue React script and localize WordPress data for use in React.
+ */
 function enqueue_react_script() {
+    // Get the current post ID
     $post_id = get_the_ID();
 
-    // Fetch the page custom fields using Pods
+    // Retrieve custom fields for the current page
     $page_custom_fields = get_custom_fields_for_page($post_id);
 
-    // Fetch related restaurants using Pods
+    // Retrieve related restaurants using Pods
     $restaurants_pod = pods('page', $post_id);
-    $restaurants = $restaurants_pod->field('restaurants'); // Get related restaurants
+    $restaurants = $restaurants_pod->field('restaurants'); // Get related restaurant IDs
 
+    // Initialize an array to store formatted restaurant data
     $restaurant_data = [];
+
+    // Process each restaurant ID and fetch its details
     if (!empty($restaurants)) {
-        foreach ($restaurants as $restaurant_id) {
-            $restaurant_data[] = get_custom_fields_for_restaurant($restaurant_id);
+        foreach ($restaurants as $restaurant) {
+            // Ensure we correctly extract the restaurant ID
+            $restaurant_id = is_array($restaurant) ? reset($restaurant) : $restaurant;
+
+            // Validate that the restaurant ID is numeric before fetching data
+            if (is_numeric($restaurant_id)) {
+                $restaurant_data[] = get_custom_fields_for_restaurant($restaurant_id);
+            }
         }
     }
 
-    // Prepare data for JavaScript
+    // Structure data to be passed to the React frontend
     $data = [
-        'postId' => (string) $post_id,
+        'postId' => (string) $post_id, // Ensure post ID is a string
         'pageData' => [
             'page_name' => $page_custom_fields['page_name'],
             'page_description' => $page_custom_fields['page_description'],
         ],
-        'restaurants' => $restaurant_data
+        'restaurants' => $restaurant_data // Array of structured restaurant data
     ];
 
-    // Enqueue React script first
+    // Enqueue the React script
     wp_enqueue_script(
         'react-script',
         get_template_directory_uri() . '/bundled/js/index.js',
@@ -48,37 +61,52 @@ function enqueue_react_script() {
         true
     );
 
-    // Localize script AFTER enqueuing React
+    // Pass WordPress data to the React script
     wp_localize_script('react-script', 'WPData', $data);
-
-    // Debug output
-    error_log(print_r($data, true));
 }
 add_action('wp_enqueue_scripts', 'enqueue_react_script');
 
-
-// Fetch custom fields for Page using Pods
-function get_custom_fields_for_page($post_id) {
+/**
+ * Retrieve custom fields for a given page using Pods.
+ *
+ * @param int $post_id The ID of the page.
+ * @return array Associative array containing page custom fields.
+ */
+function get_custom_fields_for_page(int $post_id) {
     $pod = pods('page', $post_id);
 
     return [
-        'page_name' => $pod->field('page_name') ?: '',
-        'page_description' => $pod->field('page_description') ?: '',
+        'page_name' => $pod->field('page_name') ?: '', // Fetch page name, fallback to empty string
+        'page_description' => $pod->field('page_description') ?: '', // Fetch page description, fallback to empty
     ];
 }
 
-// Fetch custom fields for Restaurant using Pods
-function get_custom_fields_for_restaurant($post_id) {
-    $pod = pods('restaurants', $post_id);
+/**
+ * Retrieve custom fields for a specific restaurant using Pods.
+ *
+ * @param int $restaurant_id The ID of the restaurant.
+ * @return array|null Associative array containing restaurant data or null if invalid.
+ */
+function get_custom_fields_for_restaurant(int $restaurant_id): ?array
+{
+    // Validate the restaurant ID before proceeding
+    if (!is_numeric($restaurant_id)) {
+        return null; // Prevent further processing if ID is invalid
+    }
 
+    // Retrieve the restaurant pod instance
+    $pod = pods('restaurants', $restaurant_id);
+
+    // Fetch and return relevant fields, providing default fallbacks
     return [
-        'post_title' => get_the_title($post_id) ?: 'No title',
-        'restaurant_image' => $pod->field('restaurant_image') ?: 'No Image',
-        'restaurant_rating' => $pod->field('restaurant_rating') ?: 'no rating',
-        'countries' => $pod->field('countries') ?: [],
-        'amount' => $pod->field('amount') ?: 'no money',
+        'restaurant_image' => $pod->field('restaurant_image') ?: 'No Image', // Image field
+        'restaurant_rating' => $pod->field('restaurant_rating') ?: 'No rating', // Rating field
+        'countries' => $pod->field('countries') ?: [], // Associated countries
+        'amount' => $pod->field('amount') ?: '0.00', // Pricing information
     ];
 }
+
+
 
 
 
