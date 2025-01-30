@@ -10,6 +10,7 @@ interface Window {
                 guid: string; // Image URL
             };
             restaurant_rating: string;
+            restaurant_name: string;
             countries: string[];
             amount: string;
         }[];

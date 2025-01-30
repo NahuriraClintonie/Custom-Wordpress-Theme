@@ -99,6 +99,7 @@ function get_custom_fields_for_restaurant(int $restaurant_id): ?array
 
     // Fetch and return relevant fields, providing default fallbacks
     return [
+        'restaurant_name' => $pod->field('post_title') ?: 'No Title',
         'restaurant_image' => $pod->field('restaurant_image') ?: 'No Image', // Image field
         'restaurant_rating' => $pod->field('restaurant_rating') ?: 'No rating', // Rating field
         'countries' => $pod->field('countries') ?: [], // Associated countries
