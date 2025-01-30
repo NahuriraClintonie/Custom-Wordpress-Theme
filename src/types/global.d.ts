@@ -5,12 +5,12 @@ interface Window {
             page_name: string;
             page_description: string;
         };
-        restaurants: {
-            restaurant_image: {
+        menus: {
+            menu_image: {
                 guid: string; // Image URL
             };
-            restaurant_rating: string;
-            restaurant_name: string;
+            menu_rating: string;
+            menu_name: string;
             countries: string[];
             amount: string;
         }[];
