@@ -13,7 +13,7 @@ const View: React.FC = () => {
     const { restaurants } = data;
 
     return (
-        <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg">
+        <div className="max-w-4xl mx-auto p-6 bg-gray-200 shadow-lg rounded-lg">
             {restaurants && restaurants.length > 0 ? (
                 <div className="mt-6">
                     {/* Optional title */}
