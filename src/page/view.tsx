@@ -1,38 +1,42 @@
-import useSWR from 'swr';
+import React from 'react';
+import RestaurantCard from "../components/Restaurant/RestaurantCard";
 
-interface PodsField {
-    id: number;
-    description: string;
-}
+/**
+ * 
+ * @constructor
+ */
+const View: React.FC = () => {
+    const data = window.WPData;
 
-const fetcher = async (url: string) => {
-    const postId = window.WPData?.postId;
-    const response = await fetch(url);
-    const data: PodsField[] = await response.json();
-    console.log(data);
-    return data.filter((item) => {
-        const itemId: string = item.id.toString();
-        return itemId === postId;
-    })[0];
-};
+    console.log('Data passed to React:', data);
 
-const View = () => {
-    const { data, error } = useSWR(
-        '/wp-json/wp/v2/pages',
-        fetcher
-    );
+    if (!data) {
+        return <p className="text-red-400">No data available.</p>;
+    }
 
-    if (error) return <p>Error loading data.</p>;
-    if (!data) return <p>Loading...</p>;
+    const { menus } = data;
 
     return (
-        <div>
-            <p>
-                point
-            </p>
-            <p>
-                {data.description}
-            </p>
+        <div className="max-w-4xl mx-auto p-6 bg-gray-200 shadow-lg rounded-lg min-h-screen overflow-y-auto">
+            {menus && menus.length > 0 ? (
+                <div className="mt-6">
+                    {/* Optional title */}
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {menus.map((menus, index) => (
+                            <RestaurantCard
+                                key={index}
+                                image={menus.menu_image.guid}
+                                name={menus.menu_name}
+                                rating={Number(menus.menu_rating)}
+                                countries={menus.countries}
+                                amount={menus.amount}
+                            />
+                        ))}
+                    </div>
+                </div>
+            ) : (
+                <p className="mt-4 text-gray-500 text-center">No associated restaurants.</p>
+            )}
         </div>
     );
 };

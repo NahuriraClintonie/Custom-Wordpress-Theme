@@ -1,3 +1,5 @@
 <?php get_header(); ?>
-<main id="page"></main>
+<main id="page" style="background-color: #ccddeb; min-height: 100vh;"></main>
 <?php get_footer(); ?>
+
+
