@@ -58,7 +58,6 @@ function enqueue_react_script() {
         '1.0.0',
         true
     );
-
     // Pass WordPress data to the React script
     wp_localize_script('react-script', 'WPData', $data);
 }

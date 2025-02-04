@@ -1,6 +1,10 @@
 import React from 'react';
 import RestaurantCard from "../components/Restaurant/RestaurantCard";
 
+/**
+ * 
+ * @constructor
+ */
 const View: React.FC = () => {
     const data = window.WPData;
 

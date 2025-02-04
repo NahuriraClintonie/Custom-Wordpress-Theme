@@ -5,6 +5,9 @@ interface Window {
             page_name: string;
             page_description: string;
         };
+        /**
+         * ooo
+         */
         menus: {
             menu_image: {
                 guid: string; // Image URL
